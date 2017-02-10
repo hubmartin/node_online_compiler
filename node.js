@@ -58,7 +58,7 @@ app.post('/', function (req, res) {
 	var compile = spawn('make', ['all'], { cwd: ".."});
 
 	compile.stdout.on('data', function (data) {
-		print('stdout: ' + data);
+		print(String(data));
 	});
 
 	compile.stderr.on('data', function (data) {
