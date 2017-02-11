@@ -1,7 +1,7 @@
 
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = 7989; //3000;
 
 var compiling = false;
 
@@ -55,6 +55,7 @@ function makeid()
     return text;
 }
 
+var timeout;
 
 app.use('/', express.static('public'))
 
@@ -93,6 +94,12 @@ app.post('/', function (req, res) {
 	
 	var spawn = require('child_process').spawn;
 	var compile = spawn('make', ['all'], { cwd: ".."});
+    
+    timeout = setTimeout(function(){
+        print(socketId, "Compilation is too long, timeout.");
+        compile.kill();
+        compiling = false;
+    }, 30000);
 
 	compile.stdout.on('data', function (data) {
 		print(socketId, String(data));
@@ -105,22 +112,36 @@ app.post('/', function (req, res) {
 	compile.on('close', function (data) {
 		if (data === 0) {
         
-        var dstFilename = "firmware_" + makeid() + ".bin";
-        print(socketId, "Binary: " + dstFilename);
-		
-		fs.rename("../out/firmware.bin", "public/" + dstFilename, function (err) {
+            var dstFilename = "firmware_" + makeid() + ".bin";
+            print(socketId, "Binary: " + dstFilename);
+            
+            fs.rename("../out/firmware.bin", "public/fw/" + dstFilename, function (err) {
 			if (err) {
-				print(socketId, "Copy error");
+				print(socketId, "Binary copy error.");
+                res.send("Binary copy error.");
+                compiling = false;
+                try{
+                clearTimeout(timeout);
+                }
+                catch(ex) {}
 				return;
 			}
             
             compiling = false;
+            try{
+                clearTimeout(timeout);
+            }
+            catch(ex) {}
 			
 			print(socketId, "Starting download");
-			res.redirect(dstFilename);
+			res.redirect("fw/" + dstFilename);
 		});
 		
-		}
+		} else {
+            print(socketId, "Compilation too long, timeout.");
+            res.send("Compilation too long, timeout.");
+            compiling = false;
+        }
 	})
 	
 	
