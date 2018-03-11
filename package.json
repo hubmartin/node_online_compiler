@@ -1,0 +1,25 @@
+{
+  "name": "gcc-online-compiler",
+  "version": "1.0.0",
+  "description": "Web interface written in Node that compiles C code using GCC.",
+  "main": "node.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hubmartin/node_online_compiler.git"
+  },
+  "keywords": [
+    "node",
+    "gcc"
+  ],
+  "author": "Martin Hubacek",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hubmartin/node_online_compiler/issues"
+  },
+  "homepage": "https://github.com/hubmartin/node_online_compiler#readme"
+}

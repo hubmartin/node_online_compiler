@@ -1,0 +1,3 @@
+[submodule "bc-project"]
+	path = bc-project
+	url = https://github.com/bigclownlabs/bcf-skeleton.git

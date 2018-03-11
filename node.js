@@ -135,7 +135,7 @@ app.post('/', function (req, res) {
     print(socketId, "RX socketid: " + socketId);
 	print(socketId, "Saving file...");
     
-	fs.writeFile("../app/application.c", code, function(err) {
+	fs.writeFile("./bc-project/app/application.c", code, function(err) {
   
     if(err) {
         return console.log(err);
@@ -144,7 +144,7 @@ app.post('/', function (req, res) {
     print(socketId, "The file was saved!");
 	
 	var spawn = require('child_process').spawn;
-	var compile = spawn('make', ['all'], { cwd: ".."});
+	var compile = spawn('make', [], { cwd: "./bc-project"});
     
     // Timeout if something goes wrong during compilation
     timeout = setTimeout(function(){
@@ -167,7 +167,7 @@ app.post('/', function (req, res) {
             var dstFilename = "firmware_" + makeid() + ".bin";
             print(socketId, "Binary: " + dstFilename);
             
-            fs.rename("../out/firmware.bin", "public/fw/" + dstFilename, function (err) {
+            fs.rename("./bc-project/out/debug/firmware.bin", "public/fw/" + dstFilename, function (err) {
 			if (err) {
 				print(socketId, "Binary copy error.");
                 res.send("Binary copy error.");
