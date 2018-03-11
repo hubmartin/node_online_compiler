@@ -44,13 +44,13 @@ io.on('connection', function(socket){
   socket.on('loadExample', function(id){
     console.log('Loading: ' + id);
     
-        var dirs = getDirectories(__dirname + "/../sdk/_examples");
+        var dirs = getDirectories(__dirname + "/bc-project/sdk/_examples");
     
         var example = dirs[id];
         
         console.log("Example: " + example);
         
-        fs.readFile(__dirname + "/../sdk/_examples/" + example + "/application.c", "utf8", function (err,data) {
+        fs.readFile(__dirname + "/bc-project/sdk/_examples/" + example + "/application.c", "utf8", function (err,data) {
           if (err) {
             return console.log(err);
           }
@@ -105,7 +105,7 @@ app.use('/', express.static('public'))
 // TODO: convert to Socket/AJAX
 app.get("/examples", function(req, res) {
 
-    var dirs = getDirectories(__dirname + "/../sdk/_examples");
+    var dirs = getDirectories(__dirname + "/bc-project/sdk/_examples");
     console.log(dirs);
     var str = "<h1 style=\"color: white;\">Can be loaded, not compiled yet</h1>";
     
