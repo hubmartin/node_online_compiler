@@ -60,9 +60,126 @@ io.on('connection', function(socket){
     });
     
   });  
+
+  socket.on('compile', function(cmd){
+    
+
+    compile(socket, cmd);
+    
+  });
 });
 
 app.use(bodyParser.urlencoded({ extended: true }));
+
+
+function compile(socket, cmd)
+{
+    console.log(cmd);
+    console.log('compile: ' + JSON.stringify(cmd, null, 4));
+    code = cmd.files["application.c"];
+    socketId = socket.id;
+
+    if(compiling)
+    {
+        print(socketId, "Another user is compiling, try it again later please.");
+        return;
+    }
+    
+    compiling = true;
+  
+    print(socketId, "RX socketid: " + socketId);
+    print(socketId, "Saving file...");
+
+    for(var filename in cmd.files)
+    {
+        filename = path.basename(filename);
+        if(
+            filename.includes("/") ||
+            filename.includes("\\") ||
+            filename.includes("..") ||
+            (!filename.endsWith(".c") && !filename.endsWith(".h"))
+        )
+        {
+            console.log("ERROR filename: " + filename);
+            compiling = false;
+            return;
+        }
+
+        print(socketId, "Saving file " + filename);
+
+        try
+        {
+        fs.writeFileSync("./bc-project/app/" + filename, cmd.files[filename])
+        }
+        catch(ex)
+        {
+            compiling = false;
+            return console.log(ex);
+        }
+
+    }
+
+    print(socketId, "The file was saved!");
+    
+    var spawn = require('child_process').spawn;
+    var compile = spawn('make', [], { cwd: "./bc-project"});
+    
+    // Timeout if something goes wrong during compilation
+    timeout = setTimeout(function(){
+        print(socketId, "Compilation is too long, timeout.");
+        compile.kill();
+        compiling = false;
+    }, 60000);
+
+    compile.stdout.on('data', function (data) {
+        print(socketId, String(data));
+    });
+
+    compile.stderr.on('data', function (data) {
+        print(socketId, String(data));
+    });
+
+    compile.on('close', function (data) {
+        if (data === 0) {
+        
+            var dstFilename = "firmware_" + makeid() + ".bin";
+            print(socketId, "Binary: " + dstFilename);
+            
+            fs.rename("./bc-project/out/debug/firmware.bin", "public/fw/" + dstFilename, function (err) {
+            if (err) {
+                print(socketId, "Binary copy error.");
+                res.send("Binary copy error.");
+                compiling = false;
+                try{
+                clearTimeout(timeout);
+                }
+                catch(ex) {}
+                return;
+            }
+            
+            compiling = false;
+            try{
+                clearTimeout(timeout);
+            }
+            catch(ex) {}
+            
+            print(socketId, "Starting download");
+            //res.redirect("fw/" + dstFilename);
+            socket.emit("download", "fw/" + dstFilename);
+        });
+        
+        } else {
+            print(socketId, "Compilation error");
+            compiling = false;
+            
+            try {
+                clearTimeout(timeout);
+            }
+            catch(ex) {}
+        }
+    })
+    
+}
 
 function print(socketId, text)
 {

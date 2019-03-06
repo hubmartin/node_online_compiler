@@ -3,7 +3,7 @@
 
 <style>
 
-	html, body { width:100%; height:100%; padding: 0; margin: 0; font-family: Tahoma; background: #272822}
+	html, body { width:100%; height:100%; padding: 0; margin: 0; font-family: Tahoma; background: #272822; color: white;}
 	
 	h1 { color: white; background: #272822; padding: 10px 10px 0px 10px; background #84ff00; margin:10;
         background-image:url(bcl.png);
@@ -20,7 +20,7 @@
 	div.console {color: white; height: 180px; overflow:auto; margin: 10px; border: 1px solid black; padding: 10px;}
 	#code { display:none }
 	
-	#editor { 
+	.editor { 
         width: 100%;
 		height: 500px;
     }
@@ -55,6 +55,15 @@
     
     a { color: white }
 
+    #tabs li
+    {
+        display: inline;
+        border: solid white;
+        border-width: 1px 1px 0px 1px;
+        padding: 2px 5px;
+        cursor:hand;
+    }
+
 </style>
 
 <title>Compiler - BigClown</title>
@@ -62,7 +71,7 @@
 
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/default.min.css">
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js"></script>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -72,16 +81,49 @@
   var panelIsDisplayed = false;
   var panelType = "";
 
-  function formSubmit()
+  var exampleCode = `#include &lt;application.h&gt;
+
+// LED instance
+bc_led_t led;
+
+// Button instance
+bc_button_t button;
+
+void button_event_handler(bc_button_t *self, bc_button_event_t event, void *event_param)
+{
+    if (event == BC_BUTTON_EVENT_PRESS)
+    {
+        bc_led_set_mode(&led, BC_LED_MODE_TOGGLE);
+    }
+}
+
+void application_init(void)
+{
+    // Initialize LED
+    bc_led_init(&led, BC_GPIO_LED, false, false);
+    bc_led_set_mode(&led, BC_LED_MODE_ON);
+
+    // Initialize button
+    bc_button_init(&button, BC_GPIO_BUTTON, BC_GPIO_PULL_DOWN, false);
+    bc_button_set_event_handler(&button, button_event_handler, NULL);
+}
+`;
+
+  function wsSend()
   {
-	// Clear console
-	document.getElementById("console").innerHTML = "";
-	
-	// Copy data from editor
-	document.getElementById("code").value = editor.getValue();
-    
-    // Copy socket id
-    document.getElementById("socketId").value = socketId;
+    var f = {};
+
+    for(var i in files)
+    {
+        f[files[i].filename] = files[i].editor.getValue();
+    }
+
+    var obj = 
+    {
+        "files": f
+    }
+
+    socket.emit("compile", obj);
   }
   
   function panelToggle()
@@ -167,6 +209,90 @@
       // Set example to the editor, cursor at the begining (-1)
       editor.setValue(code, -1);
     });
+
+    socket.on('download', function(url){
+        console.log(url);
+        document.location.href = url;
+    });
+
+    var files = [];
+
+    function selectTab(filename)
+    {
+        for(var i in files)
+        {
+            if(files[i].filename == filename)
+            {
+                files[i].div.style.display = "block";
+                files[i].li.style.backgroundColor = "grey";
+            }
+            else
+            {
+                files[i].div.style.display = "none";
+                files[i].li.style.backgroundColor = "transparent";
+            }
+        }
+    }
+
+    function removeFile(filename)
+    {
+        for(var i in files)
+        {
+            if(files[i].filename == filename)
+            {
+                // remove editor
+
+                // remove div editor
+                var div = files[i].div;
+                div.parentNode.removeChild(div);
+                // remove object
+                delete files[i]
+            }
+        }
+    }
+
+    function addFile(filename, content)
+    {
+        tabs = document.getElementById("tabs");
+        var li = document.createElement("li");
+        li.innerHTML = filename;
+
+        li.addEventListener("dblclick", function()
+        {
+            removeFile(this.innerText);
+            // remove <li>
+            this.parentNode.removeChild(this);
+        });
+        
+        li.addEventListener("click", function()
+        {
+            selectTab(this.innerText);
+        });
+        tabs.appendChild(li);
+
+        editors = document.getElementById("editors");
+
+        var div = document.createElement("div");
+        div.style.display = "none";
+        div.innerHTML = content;
+        div.setAttribute("class", "editor");
+
+        editors.appendChild(div);
+
+        var e = ace.edit(div);
+        e.setTheme("ace/theme/monokai");
+        e.getSession().setMode("ace/mode/c_cpp");
+
+        files.push({"filename": filename, "editor": e, "div": div, "li": li});
+        selectTab(filename);
+
+        console.log(files);
+    }
+
+    window.onload = function(e)
+    {
+        addFile("application.c", exampleCode);
+    }
   
 
 </script>
@@ -178,49 +304,24 @@
 
     <h1>web compiler</h1>
 
-    <div id = "editor" >
-#include &lt;application.h&gt;
+    <ul id="tabs">
 
-// LED instance
-bc_led_t led;
+    </ul>
 
-// Button instance
-bc_button_t button;
-
-void button_event_handler(bc_button_t *self, bc_button_event_t event, void *event_param)
-{
-    if (event == BC_BUTTON_EVENT_PRESS)
-    {
-        bc_led_set_mode(&led, BC_LED_MODE_TOGGLE);
-    }
-}
-
-void application_init(void)
-{
-    // Initialize LED
-    bc_led_init(&led, BC_GPIO_LED, false, false);
-    bc_led_set_mode(&led, BC_LED_MODE_ON);
-
-    // Initialize button
-    bc_button_init(&button, BC_GPIO_BUTTON, BC_GPIO_PULL_DOWN, false);
-    bc_button_set_event_handler(&button, button_event_handler, NULL);
-}
+    <div id="editors">
 
     </div>
-
-    <iframe id="post" name="post"></iframe>
+  
 
     <div class="edit">
-    <form method="post" onsubmit="formSubmit()" target="post">
-        <textarea id="code" name="code" >
-        </textarea>
-        <input type="hidden" id="socketId" name="socketId" />
+            
+    <input type = "button" onclick="wsSend()" value="Compile" />
+    <input type = "button" onclick="loadApi()" value="API Help" />
+    <input type = "button" onclick="loadExamples()" value="Examples" />
 
-        <input type="submit" value="Compile"/>
-        <input type = "button" onclick="loadApi()" value="API Help" />
-        <input type = "button" onclick="loadExamples()" value="Examples" />
-        
-    </form>
+    <input type="text" id="newFileName" text="application.c"></input>
+    <input type = "button" onclick="addFile(document.getElementById('newFileName').value, document.getElementById('newFileName').value)" value="addFile" />
+    
     </div>
 
     <div class="console" id="console_container">
@@ -228,13 +329,6 @@ void application_init(void)
         </pre>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js"></script>
-    <script>
-        var editor = ace.edit("editor");
-        editor.setTheme("ace/theme/monokai");
-        editor.getSession().setMode("ace/mode/c_cpp");
-    </script>
-    
 </div>
 
 <div id="panel" >

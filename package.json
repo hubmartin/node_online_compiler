@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/hubmartin/node_online_compiler/issues"
   },
-  "homepage": "https://github.com/hubmartin/node_online_compiler#readme"
+  "homepage": "https://github.com/hubmartin/node_online_compiler#readme",
+  "scripts": {
+    "debug": "node --nolazy --inspect-brk=9229 node.js"
+  }
 }
