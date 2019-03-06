@@ -335,12 +335,15 @@ void application_init(void)
     <div class="edit">
             
     <input type = "button" onclick="wsSend()" value="Compile" />
-    <a id="downloadManually">Download (Chrome workaround)</a>
+    <a id="downloadManually">Manual Download</a>
     <input type = "button" onclick="loadApi()" value="API Help" />
     <input type = "button" onclick="loadExamples()" value="Examples" />
+    
 
     <input type="text" id="newFileName" text="application.c"></input>
     <input type = "button" onclick="addFile(document.getElementById('newFileName').value, document.getElementById('newFileName').value)" value="addFile" />
+
+    In Chrome you might need to disable "Safe Browsing" in configuration to download BIN files.
     
     </div>
 
