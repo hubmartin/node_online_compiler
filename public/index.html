@@ -81,7 +81,7 @@
   var panelIsDisplayed = false;
   var panelType = "";
 
-  var exampleCode = `#include &lt;application.h&gt;
+  var exampleApplicationC = `#include &lt;application.h&gt;
 
 // LED instance
 bc_led_t led;
@@ -106,8 +106,18 @@ void application_init(void)
     // Initialize button
     bc_button_init(&button, BC_GPIO_BUTTON, BC_GPIO_PULL_DOWN, false);
     bc_button_set_event_handler(&button, button_event_handler, NULL);
-}
-`;
+}`;
+
+    var exampleApplicationH = `#ifndef _APPLICATION_H
+#define _APPLICATION_H
+
+#ifndef VERSION
+#define VERSION "vdev"
+#endif
+
+#include &lt;bcl.h&gt;
+
+#endif`;
 
   function wsSend()
   {
@@ -291,7 +301,9 @@ void application_init(void)
 
     window.onload = function(e)
     {
-        addFile("application.c", exampleCode);
+        addFile("application.c", exampleApplicationC);
+        addFile("application.h", exampleApplicationH);
+        selectTab("application.c");
     }
   
 
