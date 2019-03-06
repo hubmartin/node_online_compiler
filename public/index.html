@@ -220,10 +220,13 @@ void application_init(void)
       editor.setValue(code, -1);
     });
 
+    var downloadURL;
+
     socket.on('download', function(url){
         console.log(url);
         //document.location.href = url;
         document.getElementById("downloadFrame").src = url;
+        downloadURL = url;
     });
 
     var files = [];
@@ -306,6 +309,14 @@ void application_init(void)
         addFile("application.h", exampleApplicationH);
         selectTab("application.c");
     }
+
+    function downloadFirmware()
+    {
+        if(downloadURL)
+        {
+            document.location.href = downloadURL;
+        }
+    }
   
 
 </script>
@@ -329,6 +340,7 @@ void application_init(void)
     <div class="edit">
             
     <input type = "button" onclick="wsSend()" value="Compile" />
+    <input type = "button" onclick="downloadFirmware()" value="Download (Chrome workaround)" />
     <input type = "button" onclick="loadApi()" value="API Help" />
     <input type = "button" onclick="loadExamples()" value="Examples" />
 
