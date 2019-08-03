@@ -232,6 +232,30 @@ app.get("/examples", function(req, res) {
         str += "<a href = \"#\" style=\"color:white\" onclick=\"parent.loadExample("+item+")\">" + dirs[item] + "</a><br / >"
     }
     res.send(str);
+
+    /*
+     var out = https_req.get("https://firmware.bigclown.com/json", function(res) {
+
+        var data = "";
+        res.on('data', d => {
+            data += d;
+        })
+
+        res.on('end', function(){
+            const json = JSON.parse(data);
+
+            var str = "<h1 style=\"color: white;\">Can be loaded, not compiled yet</h1>";
+
+            for (var i in json.list)
+            {
+                str += "<a href = \"#\" style=\"color:white\" onclick=\"parent.loadExample("+json.list[i].name+")\">" + json.list[i].name + "</a><br / >"
+                console.log(json.list[i].name);
+            }
+
+            response.send(str);
+        })
+    });
+    */
 });
 
 
