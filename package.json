@@ -4,7 +4,7 @@
   "description": "Web interface written in Node that compiles C code using GCC.",
   "main": "node.js",
   "dependencies": {
-    "express": "^4.16.2",
+    "express": "^4.18.2",
     "socket.io": "^2.4.0"
   },
   "devDependencies": {},
